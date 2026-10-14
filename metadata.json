@@ -1,0 +1,6 @@
+{
+  "name": "MR Football Auction Premier League",
+  "description": "Professional Football Player Auction Platform with Secure Real-time Bidding, 1 Admin and 4 Team Owners, Player Registration Portal, and Live Projector Screen.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

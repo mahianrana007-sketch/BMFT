@@ -1,0 +1,365 @@
+{
+  "entities": {
+    "player": {
+      "title": "Player",
+      "description": "Registered tournament football player",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique player ID (e.g. PL-101)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Player full name"
+        },
+        "age": {
+          "type": "number",
+          "description": "Player age"
+        },
+        "mobile": {
+          "type": "string",
+          "description": "Contact phone number"
+        },
+        "jerseyNumber": {
+          "type": "number",
+          "description": "Shirt number"
+        },
+        "position": {
+          "type": "string",
+          "enum": ["GK", "DEF", "MID", "ST"],
+          "description": "Playing position"
+        },
+        "rating": {
+          "type": "number",
+          "description": "Player skill rating out of 10"
+        },
+        "experience": {
+          "type": "string",
+          "description": "Playing background and experience"
+        },
+        "basePrice": {
+          "type": "number",
+          "description": "Base auction price in points"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["available", "live", "sold", "unsold"],
+          "description": "Current auction status"
+        },
+        "teamId": {
+          "type": "string",
+          "description": "Assigned team ID if sold"
+        },
+        "soldPrice": {
+          "type": "number",
+          "description": "Winning bid price if sold"
+        },
+        "photoUrl": {
+          "type": "string",
+          "description": "Photo URL"
+        },
+        "bio": {
+          "type": "string",
+          "description": "Player scouting bio"
+        },
+        "height": {
+          "type": "string",
+          "description": "Player height"
+        },
+        "weight": {
+          "type": "string",
+          "description": "Player weight"
+        },
+        "preferredFoot": {
+          "type": "string",
+          "description": "Preferred kicking foot"
+        },
+        "pin": {
+          "type": "string",
+          "description": "4-digit secret PIN for self-profile edit"
+        },
+        "registeredViaLink": {
+          "type": "boolean",
+          "description": "Whether registered via direct online link"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["id", "name", "position", "basePrice", "status"]
+    },
+    "team": {
+      "title": "Team",
+      "description": "Competing tournament team",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique team ID"
+        },
+        "name": {
+          "type": "string",
+          "description": "Team name"
+        },
+        "ownerName": {
+          "type": "string",
+          "description": "Team owner name"
+        },
+        "ownerUserId": {
+          "type": "string",
+          "description": "Linked owner account username"
+        },
+        "logoUrl": {
+          "type": "string",
+          "description": "Team logo URL"
+        },
+        "initialBudget": {
+          "type": "number",
+          "description": "Initial purse budget in points"
+        },
+        "color": {
+          "type": "string",
+          "description": "Team badge color"
+        }
+      },
+      "required": ["id", "name", "ownerName", "initialBudget"]
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Global tournament auction rules and configuration",
+      "type": "object",
+      "properties": {
+        "tournamentName": {
+          "type": "string",
+          "description": "Tournament title"
+        },
+        "seasonYear": {
+          "type": "string",
+          "description": "Tournament season year"
+        },
+        "initialBudgetPerTeam": {
+          "type": "number",
+          "description": "Budget per team"
+        },
+        "totalTournamentBudget": {
+          "type": "number",
+          "description": "Sum of all team budgets"
+        },
+        "defaultBasePrice": {
+          "type": "number",
+          "description": "Default base price"
+        },
+        "bidIncrement": {
+          "type": "number",
+          "description": "Bid increment"
+        },
+        "maxBidIncrement": {
+          "type": "number",
+          "description": "Max bid increment"
+        },
+        "squadLimit": {
+          "type": "number",
+          "description": "Max players per team"
+        },
+        "timerSeconds": {
+          "type": "number",
+          "description": "Timer countdown in seconds"
+        },
+        "soundEnabled": {
+          "type": "boolean",
+          "description": "Sound effects active"
+        },
+        "allowPlayerSelfRegistration": {
+          "type": "boolean",
+          "description": "Whether player registration link is enabled"
+        }
+      },
+      "required": ["tournamentName", "seasonYear", "initialBudgetPerTeam", "squadLimit"]
+    },
+    "auctionHistory": {
+      "title": "AuctionHistory",
+      "description": "Audit log item of a sold, unsold, or reverted player bid",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique history item ID"
+        },
+        "playerId": {
+          "type": "string",
+          "description": "Player ID"
+        },
+        "playerName": {
+          "type": "string",
+          "description": "Player name"
+        },
+        "playerPhoto": {
+          "type": "string",
+          "description": "Player photo URL"
+        },
+        "jerseyNumber": {
+          "type": "number",
+          "description": "Jersey number"
+        },
+        "position": {
+          "type": "string",
+          "description": "Playing position"
+        },
+        "teamId": {
+          "type": "string",
+          "description": "Winning team ID"
+        },
+        "teamName": {
+          "type": "string",
+          "description": "Winning team name"
+        },
+        "winningBid": {
+          "type": "number",
+          "description": "Winning bid amount"
+        },
+        "basePrice": {
+          "type": "number",
+          "description": "Base price"
+        },
+        "status": {
+          "type": "string",
+          "description": "Final status: sold, unsold, or cancelled"
+        },
+        "actionBy": {
+          "type": "string",
+          "description": "Operator name or ID"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Transaction timestamp"
+        }
+      },
+      "required": ["id", "playerId", "playerName", "status", "winningBid"]
+    },
+    "notification": {
+      "title": "Notification",
+      "description": "Broadcast notification for real-time screens",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Notification ID"
+        },
+        "type": {
+          "type": "string",
+          "description": "Event type"
+        },
+        "title": {
+          "type": "string",
+          "description": "Notification title"
+        },
+        "message": {
+          "type": "string",
+          "description": "Detailed description"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Display timestamp"
+        }
+      },
+      "required": ["id", "type", "title", "message"]
+    },
+    "match": {
+      "title": "Match",
+      "description": "Football match fixture and results",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Match ID"
+        },
+        "homeTeamId": {
+          "type": "string",
+          "description": "Home team ID"
+        },
+        "awayTeamId": {
+          "type": "string",
+          "description": "Away team ID"
+        },
+        "date": {
+          "type": "string",
+          "description": "Match schedule date"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["upcoming", "live", "finished", "postponed"],
+          "description": "Match status"
+        }
+      },
+      "required": ["id", "homeTeamId", "awayTeamId", "date", "status"]
+    },
+    "playerPerformance": {
+      "title": "PlayerPerformance",
+      "description": "Match-by-match individual player performance statistics and ratings",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Performance log ID"
+        },
+        "playerId": {
+          "type": "string",
+          "description": "Target player ID"
+        },
+        "playerName": {
+          "type": "string",
+          "description": "Player name"
+        },
+        "minutesPlayed": {
+          "type": "number",
+          "description": "Minutes played in match"
+        },
+        "rating": {
+          "type": "number",
+          "description": "Match performance rating out of 10"
+        }
+      },
+      "required": ["id", "playerId", "playerName", "minutesPlayed", "rating"]
+    }
+  },
+  "firestore": {
+    "/players/{playerId}": {
+      "schema": "player",
+      "description": "Collection of all registered football players"
+    },
+    "/playerPerformances/{perfId}": {
+      "schema": "playerPerformance",
+      "description": "Match-by-match individual player performance sheets"
+    },
+    "/registeredUsers/{userId}": {
+      "schema": "player",
+      "description": "Private collection of registered users accessible only by authenticated Admin"
+    },
+    "/teams/{teamId}": {
+      "schema": "team",
+      "description": "Collection of competing tournament teams"
+    },
+    "/matches/{matchId}": {
+      "schema": "match",
+      "description": "Public match fixtures and results"
+    },
+    "/settings/{settingId}": {
+      "schema": "settings",
+      "description": "Global tournament settings"
+    },
+    "/auctionHistory/{historyId}": {
+      "schema": "auctionHistory",
+      "description": "Audit history of all completed bids"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "notification",
+      "description": "Live broadcast activity notifications"
+    },
+    "/test/{testId}": {
+      "schema": "notification",
+      "description": "Connection verification test document"
+    }
+  }
+}

@@ -1,0 +1,228 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.admin == true ||
+        request.auth.token.role == 'admin' ||
+        request.auth.uid != null
+      );
+    }
+
+    function isValidPlayer(data) {
+      return data.keys().hasAll(['id', 'name', 'position', 'basePrice', 'status'])
+        && data.id is string && data.id.size() <= 64
+        && data.name is string && data.name.size() <= 128
+        && data.position in ['GK', 'DEF', 'MID', 'ST']
+        && (data.basePrice is number || data.basePrice is int) && data.basePrice >= 0
+        && data.status in ['available', 'live', 'sold', 'unsold'];
+    }
+
+    function isValidRegisteredUser(data) {
+      return data.keys().hasAll(['id', 'name', 'mobile'])
+        && data.id is string && data.id.size() <= 64
+        && data.name is string && data.name.size() <= 128
+        && data.mobile is string && data.mobile.size() <= 32;
+    }
+
+    function isValidTeam(data) {
+      return data.keys().hasAll(['id', 'name'])
+        && data.id is string && data.id.size() <= 64
+        && data.name is string && data.name.size() <= 128;
+    }
+
+    function isValidMatch(data) {
+      return data.keys().hasAll(['id', 'homeTeamId', 'awayTeamId', 'date', 'status'])
+        && data.id is string && data.id.size() <= 64
+        && data.homeTeamId is string && data.homeTeamId.size() <= 64
+        && data.awayTeamId is string && data.awayTeamId.size() <= 64
+        && data.status in ['upcoming', 'live', 'finished', 'postponed'];
+    }
+
+    function isValidSettings(data) {
+      return data.keys().hasAll(['tournamentName', 'seasonYear', 'initialBudgetPerTeam', 'squadLimit'])
+        && data.tournamentName is string && data.tournamentName.size() <= 200
+        && data.seasonYear is string && data.seasonYear.size() <= 20
+        && data.initialBudgetPerTeam is number && data.initialBudgetPerTeam >= 0
+        && data.squadLimit is number && data.squadLimit >= 1;
+    }
+
+    function isValidHistory(data) {
+      return data.keys().hasAll(['id', 'playerId', 'playerName', 'status', 'winningBid'])
+        && data.id is string && data.id.size() <= 64
+        && data.playerId is string && data.playerId.size() <= 64
+        && data.playerName is string && data.playerName.size() <= 128
+        && data.status in ['sold', 'unsold', 'cancelled']
+        && data.winningBid is number && data.winningBid >= 0;
+    }
+
+    function isValidNotification(data) {
+      return data.keys().hasAll(['id', 'type', 'title', 'message'])
+        && data.id is string && data.id.size() <= 64
+        && data.type is string && data.type.size() <= 64
+        && data.title is string && data.title.size() <= 200
+        && data.message is string && data.message.size() <= 1000;
+    }
+
+    function isValidAuctionState(data) {
+      return data.keys().hasAll(['status', 'currentBid'])
+        && data.currentBid is number && data.currentBid >= 0;
+    }
+
+    function isValidCategory(data) {
+      return data.keys().hasAll(['id', 'name', 'basePrice'])
+        && data.id is string && data.id.size() <= 64
+        && data.name is string && data.name.size() <= 128
+        && data.basePrice is number && data.basePrice >= 0;
+    }
+
+    function isValidSession(data) {
+      return data.keys().hasAll(['id', 'userId', 'role', 'loginTime'])
+        && data.id is string && data.id.size() <= 128
+        && data.userId is string && data.userId.size() <= 128
+        && data.role in ['admin', 'owner', 'player', 'spectator']
+        && data.loginTime is string;
+    }
+
+    function isValidPerformance(data) {
+      return data.keys().hasAll(['id', 'playerId', 'playerName', 'minutesPlayed', 'rating'])
+        && data.id is string && data.id.size() <= 64
+        && data.playerId is string && data.playerId.size() <= 64
+        && data.playerName is string && data.playerName.size() <= 128
+        && (data.minutesPlayed is number || data.minutesPlayed is int) && data.minutesPlayed >= 0
+        && (data.rating is number || data.rating is int) && data.rating >= 0 && data.rating <= 10;
+    }
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Players collection
+    match /players/{playerId} {
+      allow read: if true;
+      allow create: if isValidId(playerId) && isValidPlayer(incoming());
+      allow update: if isValidId(playerId) && isValidPlayer(incoming());
+      allow delete: if isValidId(playerId);
+    }
+
+    // Individual Player Performance Sheet collection
+    match /playerPerformances/{perfId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidId(perfId) && isValidPerformance(incoming());
+      allow delete: if isAdmin() && isValidId(perfId);
+    }
+
+    // Registered Users collection (Private player registrations - Only Admin can read & manage)
+    match /registeredUsers/{userId} {
+      allow read: if isAdmin();
+      allow create: if isValidId(userId) && isValidRegisteredUser(incoming());
+      allow update: if isAdmin() && isValidId(userId) && isValidRegisteredUser(incoming());
+      allow delete: if isAdmin() && isValidId(userId);
+    }
+
+    // Teams collection
+    match /teams/{teamId} {
+      allow read: if true;
+      allow create: if isValidId(teamId) && isValidTeam(incoming());
+      allow update: if isValidId(teamId) && isValidTeam(incoming());
+      allow delete: if isValidId(teamId);
+    }
+
+    // Matches & Fixtures collection (Public match data)
+    match /matches/{matchId} {
+      allow read: if true;
+      allow create: if isValidId(matchId) && isValidMatch(incoming());
+      allow update: if isValidId(matchId) && isValidMatch(incoming());
+      allow delete: if isValidId(matchId);
+    }
+
+    // League Standings collection (Public access enabled)
+    match /standings/{standingId} {
+      allow read: if true;
+      allow create, update, delete: if isValidId(standingId);
+    }
+
+    match /leagueStandings/{standingId} {
+      allow read: if true;
+      allow create, update, delete: if isValidId(standingId);
+    }
+
+    // Tournament settings
+    match /settings/{settingId} {
+      allow read: if true;
+      allow create, update: if isValidId(settingId) && isValidSettings(incoming());
+      allow delete: if false;
+    }
+
+    // Auction history log
+    match /auctionHistory/{historyId} {
+      allow read: if true;
+      allow create: if isValidId(historyId) && isValidHistory(incoming());
+      allow update: if isValidId(historyId) && isValidHistory(incoming());
+      allow delete: if isValidId(historyId);
+    }
+
+    // Notifications broadcast
+    match /notifications/{notificationId} {
+      allow read: if true;
+      allow create: if isValidId(notificationId) && isValidNotification(incoming());
+      allow update: if isValidId(notificationId) && isValidNotification(incoming());
+      allow delete: if isValidId(notificationId);
+    }
+
+    // Real-Time Synchronized Auction State
+    match /auctionState/{docId} {
+      allow read: if true;
+      allow create, update: if isValidId(docId) && isValidAuctionState(incoming());
+      allow delete: if isValidId(docId);
+    }
+
+    // Player Categories
+    match /categories/{catId} {
+      allow read: if true;
+      allow create, update: if isValidId(catId) && isValidCategory(incoming());
+      allow delete: if isValidId(catId);
+    }
+
+    // Audit logs for security tracking
+    match /auditLogs/{logId} {
+      allow read: if true;
+      allow create: if isValidId(logId);
+      allow update, delete: if false;
+    }
+
+    // Active User Sessions & Multi-Device Login Presence
+    match /userSessions/{sessionId} {
+      allow read: if true;
+      allow create, update: if isValidId(sessionId) && isValidSession(incoming());
+      allow delete: if isValidId(sessionId);
+    }
+
+    // User Accounts sync across devices
+    match /userAccounts/{userId} {
+      allow read: if true;
+      allow create, update: if isValidId(userId);
+      allow delete: if isValidId(userId);
+    }
+
+    // Test collection for boot connection check
+    match /test/{testId} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}
